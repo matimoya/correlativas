@@ -238,31 +238,71 @@ function App() {
     showToast("Progreso exportado");
   }
 
+  const [showDropZone, setShowDropZone] = useState(false);
+
+  function loadProgressFile(file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        setApproved(data.approved || {});
+        setElectives(data.electives || {});
+        setPlan(data.plan || {});
+        setEnrolled(data.enrolled || []);
+        localStorage.setItem("correlativas-progress", JSON.stringify(data));
+        showToast("Progreso importado correctamente");
+      } catch {
+        showToast("Error al leer el archivo");
+      }
+    };
+    reader.readAsText(file);
+  }
+
   function importProgress() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
     input.onchange = (e) => {
       const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const data = JSON.parse(ev.target.result);
-          setApproved(data.approved || {});
-          setElectives(data.electives || {});
-          setPlan(data.plan || {});
-          setEnrolled(data.enrolled || []);
-          localStorage.setItem("correlativas-progress", JSON.stringify(data));
-          showToast("Progreso importado correctamente");
-        } catch {
-          showToast("Error al leer el archivo");
-        }
-      };
-      reader.readAsText(file);
+      if (file) loadProgressFile(file);
     };
     input.click();
   }
+
+  useEffect(() => {
+    let dragCounter = 0;
+    function handleDragEnter(e) {
+      e.preventDefault();
+      dragCounter++;
+      if (dragCounter === 1) setShowDropZone(true);
+    }
+    function handleDragOver(e) {
+      e.preventDefault();
+    }
+    function handleDragLeave(e) {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter === 0) setShowDropZone(false);
+    }
+    function handleDrop(e) {
+      e.preventDefault();
+      dragCounter = 0;
+      setShowDropZone(false);
+      const file = e.dataTransfer.files[0];
+      if (file && file.name.endsWith(".json")) loadProgressFile(file);
+      else if (file) showToast("Solo se aceptan archivos .json");
+    }
+    window.addEventListener("dragenter", handleDragEnter);
+    window.addEventListener("dragover", handleDragOver);
+    window.addEventListener("dragleave", handleDragLeave);
+    window.addEventListener("drop", handleDrop);
+    return () => {
+      window.removeEventListener("dragenter", handleDragEnter);
+      window.removeEventListener("dragover", handleDragOver);
+      window.removeEventListener("dragleave", handleDragLeave);
+      window.removeEventListener("drop", handleDrop);
+    };
+  }, []);
 
   const [toast, setToast] = useState(null);
   function showToast(msg) {
@@ -828,6 +868,15 @@ function App() {
         <div className="toast">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           {toast}
+        </div>
+      )}
+
+      {showDropZone && (
+        <div className="drop-overlay">
+          <div className="drop-box">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Solta el archivo .json para importar tu progreso</span>
+          </div>
         </div>
       )}
     </div>

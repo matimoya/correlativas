@@ -1893,3 +1893,35 @@ header {
     transform: translateY(-8px);
   }
 }
+
+/* Drop overlay */
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+
+.drop-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 64px;
+  border: 2px dashed rgba(56, 139, 253, 0.6);
+  border-radius: 16px;
+  background: rgba(56, 139, 253, 0.08);
+  color: #58a6ff;
+  font-size: 1.1rem;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
