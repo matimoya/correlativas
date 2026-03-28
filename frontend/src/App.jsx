@@ -355,12 +355,13 @@ function App() {
   }
   const hoveredRelated = new Set([...hoveredPrereqs, ...hoveredUnlocks]);
 
-  // Preview: what would change if we approved all selected subjects
+  // Preview: what would change if we approved all selected + enrolled subjects
   const selectedCodes = Object.keys(selected);
+  const previewCodes = [...selectedCodes, ...enrolled.filter((e) => !isApproved(e.code) && !selected[e.code]).map((e) => e.code)];
   let previewData = null;
-  if (selectedCodes.length > 0) {
+  if (previewCodes.length > 0) {
     const simApproved = { ...approved };
-    for (const c of selectedCodes) simApproved[c] = null;
+    for (const c of previewCodes) simApproved[c] = null;
     const simIsApproved = (c) => c in simApproved;
 
     // New subjects that would become available
@@ -382,7 +383,7 @@ function App() {
     const simIntPct = intermediateTotal > 0 ? Math.round((simIntApproved / intermediateTotal) * 100) : 0;
 
     previewData = {
-      selectedCodes,
+      selectedCodes: previewCodes,
       newAvailable,
       approvedCount: simCount,
       approvedPct: simPct,
@@ -792,9 +793,15 @@ function App() {
             <div className="preview-bar-main">
               <div className="preview-bar-info">
                 <span className="preview-name">
-                  {selectedCodes.length} materia{selectedCodes.length !== 1 ? "s" : ""} seleccionada{selectedCodes.length !== 1 ? "s" : ""}
+                  {previewCodes.length} materia{previewCodes.length !== 1 ? "s" : ""} en progreso
+                  {selectedCodes.length > 0 && enrolled.filter((e) => !isApproved(e.code) && !selected[e.code]).length > 0
+                    ? ` (${selectedCodes.length} seleccionada${selectedCodes.length !== 1 ? "s" : ""} + ${enrolled.filter((e) => !isApproved(e.code) && !selected[e.code]).length} cursando)`
+                    : selectedCodes.length > 0
+                      ? ` (${selectedCodes.length} seleccionada${selectedCodes.length !== 1 ? "s" : ""})`
+                      : ` (${enrolled.filter((e) => !isApproved(e.code)).length} cursando)`
+                  }
                 </span>
-                <span className="preview-hint">Ingresá la nota en cada tarjeta para aprobar</span>
+                {selectedCodes.length > 0 && <span className="preview-hint">Ingresá la nota en cada tarjeta para aprobar</span>}
               </div>
               <div className="preview-bar-actions">
                 <button className="btn-to-plan" onClick={sendSelectedToPlan}>
