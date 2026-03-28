@@ -20,6 +20,7 @@ const ELECTIVE_OPTIONS = {
   ],
   "3673": [
     { code: "3678", name: "Tecnologias en Seguridad" },
+    { code: "3599", name: "Redes Moviles e IoT" },
   ],
   "3674": [
     { code: "3679", name: "Vision Artificial" },
